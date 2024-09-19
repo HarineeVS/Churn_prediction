@@ -1,0 +1,35 @@
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+def data_load(filepath: str, preprocess_method: str = 'standard') -> pd.DataFrame:
+    data = pd.read_csv(filepath)
+    data = data.fillna(method='ffill')
+
+    # Encode categorical features
+    for col in data.select_dtypes(include='object').columns:
+        data[col] = LabelEncoder().fit_transform(data[col])
+
+    # Choose preprocessing method
+    if preprocess_method == 'standard':
+        scaler = StandardScaler()
+        scaled_data = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
+    elif preprocess_method == 'minmax':
+        from sklearn.preprocessing import MinMaxScaler
+        scaler = MinMaxScaler()
+        scaled_data = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
+    else:
+        raise ValueError("Unsupported preprocessing method")
+
+    return scaled_data
+
+
+
+def perform_eda(data: pd.DataFrame):
+    plt.figure(figsize=(10, 6))
+    sns.countplot(data['churn'])
+    plt.show()
+
+    sns.heatmap(data.corr(), annot=True)
+    plt.show()
